@@ -1,5 +1,5 @@
 from db.users import users
-from .base import BaseController
+from controllers.base import BaseController
 
 
 class UserController(BaseController):
@@ -11,8 +11,13 @@ class UserController(BaseController):
         return await cls.db.fetch_all(query)
 
     @classmethod
-    async def get_by_id(cls, id: int):
-        query = users.select().where(users.c.id==id)
+    async def get_by_phone(cls, phone):
+        query = users.select().where(users.c.phone == phone)
+        return await cls.db.fetch_one(query)
+
+    @classmethod
+    async def get_by_id(cls, user_id: int):
+        query = users.select().where(users.c.id == user_id)
         return await cls.db.fetch_one(query)
 
     @classmethod
@@ -24,7 +29,7 @@ class UserController(BaseController):
     @classmethod
     async def delete(cls, user_id: int):
         try:
-            query = users.delete().where(users.c.id==user_id)
+            query = users.delete().where(users.c.id == user_id)
             await cls.db.execute(query)
             return {'Success': True}
         except Exception as error:
@@ -46,6 +51,6 @@ class UserController(BaseController):
     @classmethod
     async def update(cls, user_id, new_values):
         query = users.update() \
-            .where(users.c.id==user_id).values(**new_values)
+            .where(users.c.id == user_id).values(**new_values)
         res = await cls.db.execute(query)
         return res

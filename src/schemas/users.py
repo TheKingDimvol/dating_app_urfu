@@ -3,16 +3,23 @@ from typing import Optional
 from datetime import date
 
 
-class UserBase(BaseModel):
+class BaseUser(BaseModel):
     phone: str
     name: str
 
 
-class UserCreate(UserBase):
+class UserCreate(BaseUser):
     password: str
 
 
-class UserOut(UserBase):
+class User(BaseUser):
+    id: int
+
+    class Config:
+        orm_mode = True
+
+
+class UserOut(BaseUser):
     id: int
     age: Optional[int] = None
     date_of_birth: Optional[date] = None
@@ -24,10 +31,10 @@ class UserOut(UserBase):
     sixteen_pers_type: Optional[int] = None
     
 
-class UserUpdate(UserBase):
+class UserUpdate(BaseUser):
     phone: Optional[str] = None
     name: Optional[str] = None
-    password: Optional[str]
+    password: Optional[str] = None
     age: Optional[int] = None
     date_of_birth: Optional[date] = None
     description: Optional[str] = None
