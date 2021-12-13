@@ -3,8 +3,8 @@ from fastapi import FastAPI
 
 from settings import settings
 
-from db.base import database
-from main_router import router
+from src.db.base import database
+from src.main_router import router
 
 
 app = FastAPI()

@@ -5,11 +5,11 @@ from jose import jwt, JWTError
 from passlib.hash import bcrypt
 from pydantic import ValidationError
 
-from controllers.base import BaseController
-from schemas.auth import TokenData, UserCredentials
-from schemas.users import User
-from controllers.users import UserController
-from settings import settings
+from src.controllers.base import BaseController
+from src.schemas.auth import TokenData, UserCredentials
+from src.schemas.users import User
+from src.controllers.users import UserController
+from src.settings import settings
 
 
 class AuthController(BaseController):

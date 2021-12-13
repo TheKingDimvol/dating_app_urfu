@@ -1,5 +1,5 @@
-from db.users import users
-from controllers.base import BaseController
+from src.db.users import users
+from src.controllers.base import BaseController
 
 
 class UserController(BaseController):

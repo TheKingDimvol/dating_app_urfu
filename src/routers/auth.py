@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
-from controllers.auth import AuthController
-from schemas.auth import UserCredentials, TokenData
+from src.controllers.auth import AuthController
+from src.schemas.auth import UserCredentials, TokenData
 
 
 router = APIRouter(prefix='/auth', tags=['Authorization'])

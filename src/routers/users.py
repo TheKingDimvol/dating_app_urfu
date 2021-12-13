@@ -1,8 +1,8 @@
 from fastapi import APIRouter
 from typing import List
 
-from schemas.users import UserCreate, UserOut
-from controllers.users import UserController
+from src.schemas.users import UserCreate, UserOut
+from src.controllers.users import UserController
 
 
 router = APIRouter(prefix='/users', tags=['UserTable'])

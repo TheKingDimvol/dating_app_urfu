@@ -1,4 +1,4 @@
-from db.base import database
+from src.db.base import database
 
 
 class BaseController:

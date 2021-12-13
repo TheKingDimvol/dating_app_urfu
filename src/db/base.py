@@ -1,16 +1,15 @@
+import os
+
+from dotenv import load_dotenv
+
 from databases import Database
 from sqlalchemy import create_engine, MetaData
 
+from src.settings import settings
 
-# Мои личные данные postgres
-DB_LOGIN = 'postgres'
-DB_PASSWORD = 'postgres'
-DB_SERVER = 'localhost'
-DB_PORT = '5432'
-DB_NAME = 'dating_app'
 
-DB_URL = f'postgresql://{DB_LOGIN}:{DB_PASSWORD}@{DB_SERVER}:{DB_PORT}/{DB_NAME}'
-
+load_dotenv()
+DB_URL = os.environ.get('DATABASE_URL', settings.database_url)
 
 database = Database(DB_URL)
 
