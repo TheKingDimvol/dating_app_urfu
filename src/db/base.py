@@ -9,7 +9,7 @@ from src.settings import settings
 
 
 load_dotenv()
-DB_URL = os.environ.get('DATABASE_URL', settings.database_url)
+DB_URL = os.environ.get('DATABASE_URL', settings.database_url).replace("postgres://", "postgresql://", 1)
 
 database = Database(DB_URL)
 
