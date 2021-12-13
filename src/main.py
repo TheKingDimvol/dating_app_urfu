@@ -16,7 +16,10 @@ app.include_router(router)
 # Подключение к БД
 @app.on_event('startup')
 async def startup():
-    await database.connect()
+    try:
+        await database.connect()
+    except Exception as e:
+        print(str(e))
 
 
 @app.on_event('shutdown')
