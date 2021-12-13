@@ -24,7 +24,10 @@ async def startup():
 
 @app.on_event('shutdown')
 async def shutdown():
-    await database.disconnect()
+    try:
+        await database.disconnect()
+    except Exception as e:
+        print(str(e))
 
 
 # Запуск приложение через этот файл

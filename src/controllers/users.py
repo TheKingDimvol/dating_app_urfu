@@ -1,3 +1,5 @@
+from fastapi import HTTPException, status
+
 from src.db.users import users
 from src.controllers.base import BaseController
 
@@ -33,7 +35,11 @@ class UserController(BaseController):
             await cls.db.execute(query)
             return {'Success': True}
         except Exception as error:
-            return {'Success': False, 'Error': str(error)}
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(error),
+                headers={"WWW-Authenticate": "Bearer"},
+            )
 
     # Эта функция удаляет всех пользователей из таблицы, но нужен пароль
     # TODO В будующем убрать или добавить безопасность
@@ -46,7 +52,11 @@ class UserController(BaseController):
             await cls.db.execute(query)
             return {'Success': True}
         except Exception as error:
-            return {'Success': False, 'Error': str(error)}
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(error),
+                headers={"WWW-Authenticate": "Bearer"},
+            )
 
     @classmethod
     async def update(cls, user_id, new_values):

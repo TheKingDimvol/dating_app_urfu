@@ -21,10 +21,17 @@ class AuthController(BaseController):
         user = await UserController.get_by_phone(credentials.phone)
         # TODO normal errors with codes
         if not user:
-            return {'msg': 'User with that phone number not registered!'}
-
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="User doesn't exist!",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
         if not cls.verify_password(credentials.password, user.get('password')):
-            return {'msg': 'Password is incorrect!'}
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Wrong password!!",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
 
         return cls.create_token({
             'id': user.get('id'),
@@ -38,7 +45,7 @@ class AuthController(BaseController):
         try:
             user_id = await UserController.create(user)
         except Exception as e:
-            return {'msg': str(e)}
+            raise e
 
         return cls.create_token({
             'id': user_id,
@@ -54,12 +61,7 @@ class AuthController(BaseController):
         return bcrypt.hash(password)
 
     @staticmethod
-    def validate_token(token: str) -> UserCredentials:
-        credentials_exception = HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+    def validate_token(token: str):
         try:
             payload = jwt.decode(
                 token,
@@ -67,7 +69,11 @@ class AuthController(BaseController):
                 algorithms=[settings.jwt_algorithm]
             )
         except JWTError:
-            raise credentials_exception
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
 
         return payload.get('user') or None
 

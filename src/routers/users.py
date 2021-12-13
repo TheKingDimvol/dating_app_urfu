@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from typing import List
 
-from src.schemas.users import UserCreate, UserOut
+from src.schemas.users import UserCreate, UserOut, UserUpdate
 from src.controllers.users import UserController
 
 
@@ -23,8 +23,9 @@ async def create_user(user: UserCreate):
     return await UserController.create(user)
 
 
-@router.put("/", description=
-    """
+@router.put(
+    "/{user_id}",
+    description="""
     Передать в Body параметры вида: 
     {
         "НазваниеСтолбца1": НовоеЗначение,
@@ -33,7 +34,7 @@ async def create_user(user: UserCreate):
     }
     """
 )
-async def update_user(user_id: int, new_values: dict):
+async def update_user(user_id: int, new_values: UserUpdate):
     return await UserController.update(user_id, new_values)
 
 
