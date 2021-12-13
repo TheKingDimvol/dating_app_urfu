@@ -1,7 +1,7 @@
 import uvicorn
 from fastapi import FastAPI
 
-from settings import settings
+from src.settings import settings
 
 from src.db.base import database
 from src.main_router import router
