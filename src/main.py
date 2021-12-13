@@ -16,13 +16,11 @@ app.include_router(router)
 # Подключение к БД
 @app.on_event('startup')
 async def startup():
-    return
     await database.connect()
 
 
 @app.on_event('shutdown')
 async def shutdown():
-    return
     await database.disconnect()
 
 
