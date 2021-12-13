@@ -5,7 +5,7 @@ from datetime import date
 
 class BaseUser(BaseModel):
     phone: str
-    name: str
+    name: str = None
 
 
 class UserCreate(BaseUser):
