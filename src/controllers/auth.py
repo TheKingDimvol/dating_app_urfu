@@ -54,7 +54,10 @@ class AuthController(BaseController):
 
     @staticmethod
     def verify_password(plain_password: str, hashed_password) -> bool:
-        return bcrypt.verify(plain_password, hashed_password)
+        try:
+            return bcrypt.verify(plain_password, hashed_password)
+        except ValueError:
+            return False
 
     @staticmethod
     def hash_password(password: str) -> str:
