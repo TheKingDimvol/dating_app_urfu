@@ -29,7 +29,13 @@ async def shutdown():
         await database.disconnect()
     except Exception as e:
         print(str(e))
+
         
+
+@app.get("/")
+def main_get():
+    return {"msg": "Hello World!"}
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -38,11 +44,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-@app.get("/")
-def main_get():
-    return {"msg": "Hello World!"}
 
 
 # Запуск приложение через этот файл
