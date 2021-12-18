@@ -9,6 +9,16 @@ from src.main_router import router
 
 app = FastAPI()
 
+# Разрешить запросы из всех источников
+origins = ['*']
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # Все пути будут обозначаться тут
 app.include_router(router)
 
