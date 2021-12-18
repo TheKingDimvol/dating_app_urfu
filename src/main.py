@@ -31,14 +31,18 @@ async def shutdown():
         print(str(e))
         
 
-origins =[*]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=['*'],
-    allow_headers=['*'],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
+
+
+@app.get("/")
+def main_get():
+    return {"msg": "Hello World!"}
 
 
 # Запуск приложение через этот файл
