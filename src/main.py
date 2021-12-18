@@ -10,14 +10,6 @@ from src.main_router import router
 
 app = FastAPI()
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=['*'],
-    allow_credentials=True,
-    allow_methods=['*'],
-    allow_headers=['*'],
-)
-
 # Все пути будут обозначаться тут
 app.include_router(router)
 
@@ -37,6 +29,15 @@ async def shutdown():
         await database.disconnect()
     except Exception as e:
         print(str(e))
+        
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=['*'],
+    allow_credentials=True,
+    allow_methods=['*'],
+    allow_headers=['*'],
+)
 
 
 # Запуск приложение через этот файл
