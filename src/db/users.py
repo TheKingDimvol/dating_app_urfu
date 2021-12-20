@@ -1,5 +1,4 @@
-from sqlalchemy import Table, Column, Integer, String, Date, DateTime
-import datetime
+from sqlalchemy import Table, Column, Integer, String, Date
 
 from .base import metadata
 
@@ -17,6 +16,5 @@ users = Table(
     Column("zodiac_sign", Integer, index=True),
     Column("number", Integer, index=True),
     Column("socionic_type", Integer, index=True),
-    Column("sixteen_pers_type", Integer, index=True),
-    Column("created_at", DateTime, default=datetime.datetime.utcnow)
+    Column("sixteen_pers_type", Integer, index=True)
 )

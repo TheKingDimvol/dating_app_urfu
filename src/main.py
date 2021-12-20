@@ -30,12 +30,6 @@ async def shutdown():
     except Exception as e:
         print(str(e))
 
-        
-
-@app.get("/")
-def main_get():
-    return {"msg": "Hello World!"}
-
 
 app.add_middleware(
     CORSMiddleware,
