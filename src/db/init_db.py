@@ -2,7 +2,8 @@
 Инициализация БД.
 Таблицы надо импортировать.
 """
-
+from .pairs import pairs
+from .messages import messages
 from .users import users
 from .base import metadata, engine
 

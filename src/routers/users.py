@@ -5,7 +5,7 @@ from src.schemas.users import UserCreate, UserOut, UserUpdate
 from src.controllers.users import UserController
 
 
-router = APIRouter(prefix='/users', tags=['UserTable'])
+router = APIRouter(prefix='/users', tags=['MethodsForDirectAccess'])
 
 
 @router.get("/", response_model=List[UserOut])

@@ -3,11 +3,9 @@ from datetime import datetime, timedelta
 from fastapi import HTTPException, status
 from jose import jwt, JWTError
 from passlib.hash import bcrypt
-from pydantic import ValidationError
 
 from src.controllers.base import BaseController
-from src.schemas.auth import TokenData, UserCredentials
-from src.schemas.users import User
+from src.schemas.auth import TokenData
 from src.controllers.users import UserController
 from src.settings import settings
 
@@ -19,7 +17,6 @@ class AuthController(BaseController):
     @classmethod
     async def login(cls, credentials):
         user = await UserController.get_by_phone(credentials.phone)
-        # TODO normal errors with codes
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -29,7 +26,7 @@ class AuthController(BaseController):
         if not cls.verify_password(credentials.password, user.get('password')):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Wrong password!!",
+                detail="Wrong password!",
                 headers={"WWW-Authenticate": "Bearer"},
             )
 

@@ -3,7 +3,7 @@ import datetime
 
 from .base import metadata
 
-users = Table(
+pairs = Table(
     "pairs",
     metadata,
     Column("id", Integer, primary_key=True, autoincrement=True, unique=True, index=True),

@@ -9,6 +9,7 @@ users = Table(
     Column("name", String),
     Column("phone", String, unique=True),
     Column("password", String, nullable=False),
+    Column("img", String),
     Column("date_of_birth", Date),
     Column("age", Integer),
     Column("description", String),

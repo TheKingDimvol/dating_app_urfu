@@ -1,10 +1,9 @@
-from typing import Optional
-
-from fastapi import APIRouter, Header, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from starlette import status
 
 from src.controllers.auth import AuthController
 from src.controllers.users import UserController
+from src.middlewares.auth import get_current_user
 from src.schemas.auth import UserCredentials, TokenData
 
 
@@ -30,12 +29,7 @@ async def method(token: TokenData):
 
 
 @router.post('/test_auth')
-async def get_current_user(
-    token: Optional[str] = Header(None)
-):
-    if not token:
-        return {}
-    curr_user = AuthController.validate_token(token)
+async def get_current_user(curr_user: dict = Depends(get_current_user)):
     user_data = await UserController.get_by_id(curr_user['id'])
     if user_data is None:
         raise HTTPException(
