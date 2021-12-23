@@ -72,12 +72,17 @@ class PairController(BaseController):
     async def like_user(cls, user_id: int, curr_user: int, liked: bool):
         pair_exist = await cls.get_pairs(first_user=user_id, second_user=curr_user)
         if not pair_exist:
-            return await cls.create_pair(
+            pair_id = await cls.create_pair(
                 PairCreate(
-                    first_user=user_id, second_user=curr_user,
+                    first_user=curr_user, second_user=user_id,
                     like=False if liked is False else None
                 )
             )
+            return {
+                'like': None if liked else False,
+                'id': pair_id,
+                'determined_date': None
+            }
 
         new_like = None
         pair_exist = Pair(**dict(pair_exist[0].items()))
@@ -144,4 +149,11 @@ class PairController(BaseController):
             determined_date=pair.determined_date
         )
         await cls.db.execute(query)
-        return {'like': pair.like, 'id': pair_id}
+        return {
+            'like': pair.like,
+            'id': pair_id,
+            'determined_date':
+                str(pair.determined_date)
+                if pair.like is not None
+                else None
+        }

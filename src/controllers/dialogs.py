@@ -13,7 +13,7 @@ class DialogController(BaseController):
     @classmethod
     async def get_user_dialogs(cls, curr_user):
         query = '''
-        SELECT DISTINCT ON (pr.id) pair, text, author, ms.id, send_time, is_read
+        SELECT DISTINCT ON (pr.id) pair, text, author, ms.id, send_time::text, is_read
         FROM pairs pr
         JOIN messages ms ON ms.pair = pr.id
         WHERE (
@@ -31,6 +31,11 @@ class DialogController(BaseController):
             and_(messages.c.pair == pair_id, messages.c.author == author)
         ).values(is_read=True)
         return await cls.db.execute(query)
+
+    @classmethod
+    async def get_messages_by_pair(cls, pair: int):
+        query = messages.select().where(messages.c.pair == pair)
+        return await cls.db.fetch_all(query)
 
     @classmethod
     async def create_msg(cls, msg_obj: MsgCreate):
