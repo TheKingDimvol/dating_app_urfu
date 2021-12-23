@@ -34,8 +34,10 @@ class PairController(BaseController):
         query = '''SELECT id, name, age, city, number, zodiac_sign, socionic_type, sixteen_pers_type  
                 FROM users
                 WHERE id <> :user_id AND age BETWEEN :main_age - 5 AND :main_age +5 
+                    AND city = :main_city
                 '''
-        applicants = await cls.db.fetch_all(query=query, values={"user_id": user_id, "main_age": people[0]["age"]})
+        applicants = await cls.db.fetch_all(query=query, values={"user_id": user_id, "main_age": people[0]["age"],
+                                                                 "main_city": people[0]["city"]})
         for i in range(len(applicants)):
             people.append(to_converter(applicants[i]))
 
