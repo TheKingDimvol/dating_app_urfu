@@ -10,8 +10,8 @@ router = APIRouter(prefix='/pairs', tags=['PairTable'])
 
 
 @router.get("/list_for_swipe")
-async def get_list_for_swipe(user_id: int):
-    return await PairController.get_list_for_swipe(user_id)
+async def get_list_for_swipe(curr_user: dict = Depends(get_current_user)):
+    return await PairController.get_list_for_swipe(curr_user['id'])
 
 
 @router.put("/like/{user_id}")
@@ -20,7 +20,7 @@ async def like(user_id: int, liked: bool, curr_user: dict = Depends(get_current_
 
 
 @router.get("/", tags=['MethodsForDirectAccess'], response_model=List[Pair])
-async def get_pairs(
+async def get_dialogs(
         id: Optional[int] = None,
         user: Optional[int] = None,
         second_user: Optional[int] = None

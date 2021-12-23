@@ -31,10 +31,8 @@ class UserOut(BaseUser):
     sixteen_pers_type: Optional[int] = None
     
 
-class UserUpdate(BaseUser):
-    phone: Optional[str] = None
+class UserUpdate(BaseModel):
     name: Optional[str] = None
-    password: Optional[str] = None
     age: Optional[int] = None
     date_of_birth: Optional[date] = None
     description: Optional[str] = None
