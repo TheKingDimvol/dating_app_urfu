@@ -60,7 +60,9 @@ class UserController(BaseController):
 
     @classmethod
     async def update(cls, user_id, new_values):
+        print(new_values.dict())
         query = users.update() \
-            .where(users.c.id == user_id).values(**new_values)
+            .where(users.c.id == user_id).values(new_values.dict())
         res = await cls.db.execute(query)
         return res
+
