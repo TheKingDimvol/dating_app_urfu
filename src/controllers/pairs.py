@@ -5,6 +5,7 @@ from fastapi import HTTPException
 from sqlalchemy import or_, and_
 from starlette import status
 
+from src.controllers.dialogs import DialogController
 from src.db.pairs import pairs
 from src.controllers.base import BaseController
 
@@ -12,7 +13,7 @@ from src.person_tests.numbers_types import NumbersTypes
 from src.person_tests.personalities16_types import PersonalitiesTypes
 from src.person_tests.socionic_types import SocionicTypes
 from src.person_tests.zodiac_signs import ZodiacSigns
-from src.schemas.pairs import PairUpdate, PairCreate, Pair
+from src.schemas.pairs import PairUpdate, PairCreate, Pair, MsgCreate
 
 
 class PairController(BaseController):
@@ -66,15 +67,16 @@ class PairController(BaseController):
         return people[1:]
 
     @classmethod
-    async def like_user(cls, user_id: int, curr_user: dict, liked: bool):
-        pair_exist = await cls.get_pairs(first_user=user_id, second_user=curr_user['id'])
+    async def like_user(cls, user_id: int, curr_user: int, liked: bool):
+        pair_exist = await cls.get_pairs(first_user=user_id, second_user=curr_user)
         if not pair_exist:
             return await cls.create_pair(
                 PairCreate(
-                    first_user=user_id, second_user=curr_user['id'],
+                    first_user=user_id, second_user=curr_user,
                     like=False if liked is False else None
                 )
             )
+
         new_like = None
         pair_exist = Pair(**dict(pair_exist[0].items()))
         if pair_exist.like is True:
@@ -84,12 +86,13 @@ class PairController(BaseController):
                 headers={"WWW-Authenticate": "Bearer"},
             )
         elif pair_exist.like is None:
-            # TODO отправить сообщения о взаимной симпатии
-            print(f'User {curr_user["id"]} liked user {user_id}')
+            await DialogController.create_msg(
+                MsgCreate(text='Взаимность!', pair=pair_exist.id, author=None)
+            )
             new_like = liked
         elif pair_exist.like is False:
             # TODO доабвлять записи в таблицу фильтров
-            print(f'User {curr_user["id"]} disliked user {user_id}')
+            print(f'User {curr_user} disliked user {user_id}')
             new_like = False
         return await cls.update_pair(
             pair_exist.id, PairUpdate(like=new_like, determined_date=date.today())
@@ -130,12 +133,13 @@ class PairController(BaseController):
 
     @classmethod
     async def update_pair(cls, pair_id, pair: PairUpdate):
-        if pair.like:
+        if pair.like is not None:
             pair.determined_date = date.today()
-        query = pairs.update().where(
+        query = pairs.update().returning(pairs.c.like).where(
             pairs.c.id == pair_id
         ).values(
             like=pair.like,
             determined_date=pair.determined_date
         )
-        return await cls.db.execute(query)
+        await cls.db.execute(query)
+        return {'like': pair.like, 'id': pair_id}

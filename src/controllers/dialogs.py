@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from sqlalchemy import and_
+
 from src.db.messages import messages
 from src.controllers.base import BaseController
 from src.schemas.pairs import MsgCreate, MsgUpdate
@@ -22,6 +24,13 @@ class DialogController(BaseController):
         ORDER BY pr.id, send_time desc 
         '''
         return await cls.db.fetch_all(query, {'user_id': curr_user['id']})
+
+    @classmethod
+    async def messages_read(cls, pair_id: int, author: int):
+        query = messages.update().where(
+            and_(messages.c.pair == pair_id, messages.c.author == author)
+        ).values(is_read=True)
+        return await cls.db.execute(query)
 
     @classmethod
     async def create_msg(cls, msg_obj: MsgCreate):

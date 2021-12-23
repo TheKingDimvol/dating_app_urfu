@@ -17,13 +17,13 @@ class Pair(PairCreate):
 
 class PairUpdate(BaseModel):
     like: Union[bool, None] = None
-    determined_date: Union[date, None] = date.today()
+    determined_date: Optional[Union[date, None]] = None
 
 
 class MsgCreate(BaseModel):
     text: str
     pair: int
-    author: int
+    author: Union[int, None]
     is_read: Optional[bool] = False
     send_time: Optional[datetime] = None
 

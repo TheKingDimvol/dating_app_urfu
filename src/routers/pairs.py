@@ -16,7 +16,7 @@ async def get_list_for_swipe(user_id: int):
 
 @router.put("/like/{user_id}")
 async def like(user_id: int, liked: bool, curr_user: dict = Depends(get_current_user)):
-    return await PairController.like_user(user_id, curr_user, liked)
+    return await PairController.like_user(user_id, curr_user['id'], liked)
 
 
 @router.get("/", tags=['MethodsForDirectAccess'], response_model=List[Pair])
