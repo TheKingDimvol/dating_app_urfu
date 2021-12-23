@@ -1,5 +1,6 @@
 import uvicorn
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from src.settings import settings
 
@@ -24,7 +25,16 @@ async def startup():
 
 @app.on_event('shutdown')
 async def shutdown():
-    await database.disconnect()
+    try:
+        await database.disconnect()
+    except Exception as e:
+        print(str(e))
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=['*']
+)
 
 
 # Запуск приложение через этот файл
