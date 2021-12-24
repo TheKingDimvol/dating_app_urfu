@@ -176,7 +176,8 @@ async def websocket_endpoint(websocket: WebSocket, token: str):
     try:
         user_id = AuthController.validate_token(token)['id']
         print(f'User "{user_id}" has connected!')
-    except:
+    except Exception as e:
+        print(str(e))
         await websocket.accept()
         await websocket.send_json({'error': 'Could not validate token!'})
         await websocket.close()
