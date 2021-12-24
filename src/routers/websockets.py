@@ -54,7 +54,12 @@ html = """
             function connect(event) {
                 event.preventDefault()
                 var token = document.getElementById('token').value
-                ws = new WebSocket(`ws://localhost:8000/ws/${token}`);
+                if (window.location.protocol == "https:") {
+                    var ws_scheme = "wss://";
+                } else {
+                    var ws_scheme = "ws://"
+                };
+                ws = new WebSocket(ws_scheme + location.host + `/ws/${token}`);
                 connected = true
                 ws.onmessage = function(event) {
                     var msg = JSON.parse(event.data)
