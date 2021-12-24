@@ -92,7 +92,7 @@ html = """
             }
             function login(event) {
                 event.preventDefault();
-                fetch(ws_scheme + location.host + '/auth/login', {
+                fetch("https://" + location.host + '/auth/login', {
                     method: 'POST',
                     headers: {"Content-Type": "application/json"},
                     body: JSON.stringify({
