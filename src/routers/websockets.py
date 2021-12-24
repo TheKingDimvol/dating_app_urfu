@@ -49,16 +49,16 @@ html = """
         <ul id='messages'>
         </ul>
         <script>
+            if (window.location.protocol == "https:") {
+                var ws_scheme = "wss://";
+            } else {
+                var ws_scheme = "ws://"
+            };
             let connected = false
             var ws = null
             function connect(event) {
                 event.preventDefault()
                 var token = document.getElementById('token').value
-                if (window.location.protocol == "https:") {
-                    var ws_scheme = "wss://";
-                } else {
-                    var ws_scheme = "ws://"
-                };
                 ws = new WebSocket(ws_scheme + location.host + `/ws/${token}`);
                 connected = true
                 ws.onmessage = function(event) {
@@ -92,7 +92,7 @@ html = """
             }
             function login(event) {
                 event.preventDefault();
-                fetch('http://127.0.0.1:8000/auth/login', {
+                fetch(ws_scheme + location.host + '/auth/login', {
                     method: 'POST',
                     headers: {"Content-Type": "application/json"},
                     body: JSON.stringify({
