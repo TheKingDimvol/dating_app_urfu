@@ -23,7 +23,7 @@ class PairController(BaseController):
     async def get_list_for_swipe(cls, user_id):
 
         def to_converter(person):
-            names = ["id", "name", "age", "city", "number", "zodiac_sign", "socionic_type", "sixteen_pers_type"]
+            names = ["id", "name", "img", "age", "city", "number", "zodiac_sign", "socionic_type", "sixteen_pers_type"]
             couple = [pair for pair in zip(names, range(len(names)))]
             return {k: person.get(key=i) for k, i in couple}
 
@@ -33,7 +33,7 @@ class PairController(BaseController):
         def total_percentage(*args):
             return round((sum(args)/len(args)))
 
-        query = '''SELECT id, name, age, city, number, zodiac_sign, socionic_type, sixteen_pers_type  
+        query = '''SELECT id, name, img, age, city, number, zodiac_sign, socionic_type, sixteen_pers_type  
         FROM users
         WHERE id = :user_id
         '''
@@ -41,15 +41,55 @@ class PairController(BaseController):
         # people = [{id, name, age, city, number, zodiac_sign, socionic_type, sixteen_pers_type}]
         people = []
         people.append(to_converter(person[0]))
-        query = '''SELECT id, name, age, city, number, zodiac_sign, socionic_type, sixteen_pers_type  
-                FROM users
-                WHERE id <> :user_id AND age BETWEEN :main_age - 5 AND :main_age +5 
-                    AND city = :main_city
+
+        query = '''SELECT users.id, name, img, age, city, number, zodiac_sign, socionic_type, sixteen_pers_type  
+            FROM users
+                INNER JOIN pairs ON users.id = pairs.first_user
+            WHERE users.id <> :user_id AND age BETWEEN :main_age - 5 AND :main_age +5 
+                AND city = :main_city AND pairs.like IS NULL 
+                AND number IS NOT NULL 
+                AND zodiac_sign IS NOT NULL AND socionic_type IS NOT NULL 
+                AND sixteen_pers_type IS NOT NULL 
+            LIMIT 20;
                 '''
+
         applicants = await cls.db.fetch_all(query=query, values={"user_id": user_id, "main_age": people[0]["age"],
                                                                  "main_city": people[0]["city"]})
         for i in range(len(applicants)):
             people.append(to_converter(applicants[i]))
+        more_applicants = 20 - len(people)
+
+        query = '''SELECT first_user
+                    FROM pairs
+                    WHERE second_user = :user_id 
+                    UNION
+                    SELECT second_user
+                    FROM pairs
+                    WHERE first_user = :user_id
+                        '''
+
+        not_applicants = await cls.db.fetch_all(query=query, values={"user_id": user_id})
+        not_id = [user_id]
+        for i in not_applicants:
+            not_id.append(i.get(key=0))
+        exist_id = ','.join([str(i) for i in not_id])
+
+
+        if more_applicants > 0:
+            query = f'''SELECT id, name, img, age, city, number, zodiac_sign, socionic_type, sixteen_pers_type  
+                        FROM users
+                        WHERE id NOT IN ({exist_id}) AND age BETWEEN :main_age - 5 AND :main_age +5 
+                            AND city = :main_city AND number IS NOT NULL 
+                            AND zodiac_sign IS NOT NULL AND socionic_type IS NOT NULL 
+                            AND sixteen_pers_type IS NOT NULL 
+                        LIMIT :limit;
+                            '''
+            applicants = await cls.db.fetch_all(query=query, values={"main_age": people[0]["age"],
+                                                                     "main_city": people[0]["city"],
+                                                                     "limit": more_applicants})
+            for i in range(len(applicants)):
+                people.append(to_converter(applicants[i]))
+
 
         for i in range(1, len(people)):
             people[i]['socio'] = relation(people[0]['socionic_type'], people[i]['socionic_type'],
@@ -65,7 +105,7 @@ class PairController(BaseController):
             people[i]["socionic_type"] = SocionicTypes(people[i]["socionic_type"]).ru_name()
             people[i]["sixteen_pers_type"] = PersonalitiesTypes(people[i]["sixteen_pers_type"]).ru_name()
 
-        print(type(people[1]["number"]))
+
         return people[1:]
 
     @classmethod
