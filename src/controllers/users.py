@@ -2,6 +2,8 @@ from fastapi import HTTPException, status
 
 from src.db.users import users
 from src.controllers.base import BaseController
+from src.person_tests.personalities16_types import PersonalitiesTypes
+from src.person_tests.socionic_types import SocionicTypes
 
 
 class UserController(BaseController):
@@ -65,4 +67,39 @@ class UserController(BaseController):
             .where(users.c.id == user_id).values(new_values.dict())
         res = await cls.db.execute(query)
         return res
+
+    @classmethod
+    async def update_socionic(cls, user_id, socionic_type):
+        try:
+            new_type = SocionicTypes[socionic_type.upper()].value
+        except Exception as error:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(error) + ", this type does not exist",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        query = """UPDATE users SET socionic_type = :type
+            WHERE id = :user_id
+            """
+        res = await cls.db.execute(query=query, values={"user_id": user_id,
+                                                            "type": new_type})
+        return res
+
+    @classmethod
+    async def update_personalit(cls, user_id, personalit_type):
+        try:
+            new_type = PersonalitiesTypes[personalit_type.upper()].value
+        except Exception as error:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(error) + ", this type does not exist",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        query = """UPDATE users SET sixteen_pers_type = :type
+                WHERE id = :user_id
+                """
+        res = await cls.db.execute(query=query, values={"user_id": user_id,
+                                                        "type": new_type})
+        return res
+
 
