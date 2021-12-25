@@ -1,5 +1,3 @@
-from typing import List
-
 from fastapi import WebSocket, WebSocketDisconnect, APIRouter
 from fastapi.responses import HTMLResponse
 
@@ -33,6 +31,9 @@ html = """
         </form>
         <a>Partner's id:</a>
         <input type="number" id="addressee" autocomplete="off"/>
+        <br>
+        <a>Dialog id:</a>
+        <input type="number" id="dialog" autocomplete="off"/>
         <form action="" onsubmit="likeUser(event)">
             <a>Like/dislike user: </a> 
             <select id="like">
@@ -45,6 +46,9 @@ html = """
             <a>Send message to user: </a> 
             <input type="text" id="messageText" autocomplete="off"/>
             <button>Send</button>
+        </form>
+        <form action="" onsubmit="readMessages(event)">
+            <button>I read partner's messages</button>
         </form>
         <ul id='messages'>
         </ul>
@@ -85,14 +89,22 @@ html = """
             function sendMessage(event) {
                 var input = document.getElementById("messageText")
                 var addressee = document.getElementById("addressee")
+                var dialog = document.getElementById("dialog")
                 if (!connected) return 
-                ws.send(JSON.stringify({'message': input.value, 'addressee': addressee.value}))
+                ws.send(JSON.stringify({'message': input.value, 'dialog': dialog.value}))
                 input.value = ''
+                event.preventDefault()
+            }
+            function readMessages(event) {
+                var dialog = document.getElementById("dialog")
+                var addressee = document.getElementById("addressee")
+                if (!connected) return 
+                ws.send(JSON.stringify({'dialog': dialog.value, 'addressee': addressee.value}))
                 event.preventDefault()
             }
             function login(event) {
                 event.preventDefault();
-                fetch("https://" + location.host + '/auth/login', {
+                fetch("http://" + location.host + '/auth/login', {
                     method: 'POST',
                     headers: {"Content-Type": "application/json"},
                     body: JSON.stringify({
@@ -123,21 +135,28 @@ class ConnectionManager:
     def disconnect(self, client_id: int):
         del self.active_connections[client_id]
 
-    async def send_personal_message(self, websocket: WebSocket, message: str, addressee: int, author: int):
+    async def send_personal_message(self, websocket: WebSocket, message: str, dialog: int, author: int):
         created_msg = await DialogController.create_msg(
-            MsgCreate(text=message, pair=addressee, author=author)
+            MsgCreate(text=message, pair=dialog, author=author)
         )
         # Надо ли отправлять его себе? Целиком или только ИД?
         await websocket.send_json({
             'id': created_msg,
+            'dialog': dialog,
             'message': message,
             'author': author,
             'is_read': True
         })
+
+        pair = dict((await PairController.get_pairs(dialog))[0])
+        first = pair['first_user']
+        addressee = first if first != author else pair['second_user']
+
         addressee_is_online = self.active_connections.get(addressee)
         if addressee_is_online:
             await addressee_is_online.send_json({
                 'id': created_msg,
+                'dialog': dialog,
                 'message': message,
                 'author': author,
                 'is_read': False
@@ -187,19 +206,18 @@ async def websocket_endpoint(websocket: WebSocket, token: str):
     try:
         while True:
             data = await websocket.receive_json()
-            # Что должно приходить
+            # Что может приходить
             # data = {
-            #     'message', 'dialog', 'addressee', 'like'
+            #     'message', 'dialog', 'addressee', 'like', 'read'
             # }
-            if 'addressee' not in data or not data.get('addressee') or not data['addressee'].isdigit():
-                await websocket.send_json({'error': 'Need addressee id to send a message or like!'})
-                continue
-            addressee = await UserController.get_by_id(int(data['addressee']))
-            if not addressee:
-                await websocket.send_json({'error': 'No such addressee!'})
-                continue
+            addressee = None
+            if 'addressee' in data:
+                addressee = await UserController.get_by_id(int(data['addressee']))
+                if not addressee:
+                    await websocket.send_json({'error': 'No such addressee!'})
+                    continue
 
-            if 'like' in data:
+            if 'like' in data and addressee:
                 pair = await PairController.like_user(int(data['addressee']), user_id, bool(data['like']))
                 pair = dict(pair.items())
                 if pair.get('like'):
@@ -208,15 +226,23 @@ async def websocket_endpoint(websocket: WebSocket, token: str):
                         user_id,
                         pair['id']
                     )
-            elif 'message' not in data or not data['message']:
+                continue
+
+            if 'message' not in data or not data['message']:
                 # Если нет сообщения - значит читаем пришедшие
                 # обновляем БД
                 await DialogController.messages_read(int(data['dialog']), int(data['addressee']))
                 # отправляем пользователю о прочтении его сообщений
                 await manager.send_partner_read_msgs(int(data['dialog']), int(data['addressee']), user_id)
-            else:
+                continue
+
+            if 'message' in data and 'dialog' in data:
                 # отправляем пользователю новое сообщение от текущего пользователя
-                await manager.send_personal_message(websocket, data['message'], int(data['dialog_id']), user_id)
+                await manager.send_personal_message(websocket, data['message'], int(data['dialog']), user_id)
+                continue
+
+            await websocket.send_json({'error': 'Could not understand an action!'})
+            continue
     except WebSocketDisconnect:
         manager.disconnect(user_id)
         await manager.broadcast(f"Client #{user_id} left the chat")
