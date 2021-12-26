@@ -13,6 +13,7 @@ from src.person_tests.numbers_types import NumbersTypes
 from src.person_tests.personalities16_types import PersonalitiesTypes
 from src.person_tests.socionic_types import SocionicTypes
 from src.person_tests.zodiac_signs import ZodiacSigns
+from src.person_tests.city import City
 from src.schemas.pairs import PairUpdate, PairCreate, Pair, MsgCreate
 
 
@@ -104,6 +105,7 @@ class PairController(BaseController):
                                                     people[i]['nr'], people[i]['zs'])
             people[i]["socionic_type"] = SocionicTypes(people[i]["socionic_type"]).ru_name()
             people[i]["sixteen_pers_type"] = PersonalitiesTypes(people[i]["sixteen_pers_type"]).ru_name()
+            people[i]["city"] = City(people[i]["city"]).ru_name()
 
 
         return people[1:]
