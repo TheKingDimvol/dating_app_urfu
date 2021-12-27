@@ -130,6 +130,8 @@ class ConnectionManager:
         # При первом подключении будет приходить массив Диалогов пользователя
         user_dialogs = await DialogController.get_user_dialogs({'id': client_id})
         dialogs = [dict(rec.items()) for rec in user_dialogs]
+        for dialog in dialogs:
+            dialog['dialog'] = dialog.pop('pair')
         await websocket.send_json({'dialogs': dialogs})
 
     def disconnect(self, client_id: int):
@@ -139,14 +141,15 @@ class ConnectionManager:
         created_msg = await DialogController.create_msg(
             MsgCreate(text=message, pair=dialog, author=author)
         )
-        # Надо ли отправлять его себе? Целиком или только ИД?
-        await websocket.send_json({
+        sent_message = {
             'id': created_msg,
             'dialog': dialog,
             'message': message,
             'author': author,
-            'is_read': True
-        })
+            'is_read': False
+        }
+        # Надо ли отправлять его себе? Целиком или только ИД?
+        await websocket.send_json(sent_message)
 
         pair = dict((await PairController.get_pairs(dialog))[0])
         first = pair['first_user']
@@ -154,13 +157,7 @@ class ConnectionManager:
 
         addressee_is_online = self.active_connections.get(addressee)
         if addressee_is_online:
-            await addressee_is_online.send_json({
-                'id': created_msg,
-                'dialog': dialog,
-                'message': message,
-                'author': author,
-                'is_read': False
-            })
+            await addressee_is_online.send_json(sent_message)
 
     async def send_partner_read_msgs(self, pair: int, sender: int, reader: int):
         addressee_is_online = self.active_connections.get(sender)
@@ -171,6 +168,7 @@ class ConnectionManager:
         initial_message = await DialogController.get_messages_by_pair(pair)
         initial_message = dict(initial_message[0].items())
         initial_message['send_time'] = str(initial_message.get('send_time'))
+        initial_message['dialog'] = initial_message.pop('pair')
         liked_online = self.active_connections.get(liked_user)
         if liked_online:
             await liked_online.send_json(initial_message)

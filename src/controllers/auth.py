@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 
+import asyncpg
 from fastapi import HTTPException, status
 from jose import jwt, JWTError
 from passlib.hash import bcrypt
@@ -41,8 +42,12 @@ class AuthController(BaseController):
 
         try:
             user_id = await UserController.create(user)
-        except Exception as e:
-            raise e
+        except asyncpg.exceptions.UniqueViolationError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="User with this phone already exists!",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
 
         return cls.create_token({
             'id': user_id,

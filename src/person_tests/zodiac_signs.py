@@ -1,7 +1,6 @@
 from enum import Enum
 
 
-# TODO: доделать для всех знаков
 class ZodiacSigns(Enum):
     aries = 0
     taurus = 1

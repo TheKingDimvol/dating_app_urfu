@@ -19,3 +19,17 @@ users = Table(
     Column("socionic_type", Integer, index=True),
     Column("sixteen_pers_type", Integer, index=True)
 )
+
+UPDATE_COLUMNS = [
+    "name",
+    "password",
+    "img",
+    "date_of_birth",
+    "age",
+    "description",
+    "city",
+    "zodiac_sign",
+    "number",
+    "socionic_type",
+    "sixteen_pers_type"
+]
