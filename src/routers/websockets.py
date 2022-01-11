@@ -1,9 +1,12 @@
+import base64
+
 from fastapi import WebSocket, WebSocketDisconnect, APIRouter
 from fastapi.responses import HTMLResponse
 
 from src.controllers.auth import AuthController
 from src.controllers.dialogs import DialogController
 from src.controllers.pairs import PairController
+from src.controllers.profile import ProfileController
 from src.controllers.users import UserController
 from src.schemas.pairs import MsgCreate
 
@@ -75,6 +78,14 @@ html = """
                         message.appendChild(content)
                         messages.appendChild(message)   
                     }
+                    if ('dialogs' in msg) {
+                        var messages = document.getElementById('messages')
+                        var message = document.createElement('li')
+                        var image = new Image(100, 100)
+                        image.src = 'data:image/png;base64, ' + JSON.parse(event.data).dialogs[0].image
+                        message.appendChild(image)
+                        messages.appendChild(message)    
+                    }
                 }
             }
             function likeUser(event) {
@@ -131,6 +142,12 @@ class ConnectionManager:
         user_dialogs = await DialogController.get_user_dialogs({'id': client_id})
         dialogs = [dict(rec.items()) for rec in user_dialogs]
         for dialog in dialogs:
+            # Определим с кем ведется диалог
+            first_user = dialog.pop('first_user')
+            second_user = dialog.pop('second_user')
+            dialog['addressee'] = first_user if client_id == second_user else second_user
+            dialog['image'] = ProfileController.get_image(dialog['addressee'])
+
             dialog['dialog'] = dialog.pop('pair')
         await websocket.send_json({'dialogs': dialogs})
 

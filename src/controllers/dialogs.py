@@ -13,7 +13,8 @@ class DialogController(BaseController):
     @classmethod
     async def get_user_dialogs(cls, curr_user):
         query = '''
-        SELECT DISTINCT ON (pr.id) pair, text, author, ms.id, send_time::text, is_read
+        SELECT DISTINCT ON (pr.id) pair, text, author, ms.id, send_time::text, is_read, 
+            pr.first_user, pr.second_user
         FROM pairs pr
         JOIN messages ms ON ms.pair = pr.id
         WHERE (

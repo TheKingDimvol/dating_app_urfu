@@ -1,3 +1,5 @@
+import base64
+
 from fastapi import HTTPException, status
 from passlib.hash import bcrypt
 
@@ -9,6 +11,19 @@ from src.controllers.users import UserController
 class ProfileController(BaseController):
     """Класс для операций, связанных с профилем пользователя
     """
+
+    @classmethod
+    def get_image(cls, user_id: int):
+        try:
+            with open(f'C:\\Users\\the_k\\Desktop\\dating_app\\src\\images\\{user_id}.jpeg', 'rb') as image:
+                encoded_string = base64.b64encode(image.read()).decode('utf-8')
+                return encoded_string
+        except FileNotFoundError:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Couldn't find user's profile picture!",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
 
     @classmethod
     async def update(cls, user_id: int, new_values: dict):
