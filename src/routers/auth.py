@@ -10,7 +10,7 @@ from src.schemas.auth import UserCredentials, TokenData
 router = APIRouter(prefix='/auth', tags=['Authorization'])
 
 
-@router.post("/login", response_model=TokenData)
+@router.post("/login", response_model=dict)
 async def login(user_data: UserCredentials):
     return await AuthController.login(user_data)
 

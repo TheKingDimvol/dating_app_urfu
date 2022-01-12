@@ -43,13 +43,26 @@ class ProfileController(BaseController):
         for column, value in new_values.items():
             if column not in UPDATE_COLUMNS:
                 raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
+                    status_code=status.HTTP_406_NOT_ACCEPTABLE,
                     detail=f"Column '{column}' doesn't exist!",
                     headers={"WWW-Authenticate": "Bearer"},
                 )
-            if column == 'password':
-                new_values[column] = cls.process_password(value)
-            # todo ограничения на все другие поля! Узнать что нам будут передавать!
+            if column in ["age", "city", "zodiac_sign", "number", "socionic_type", "sixteen_pers_type"]:
+                if not isinstance(new_values[column], int):
+                    raise HTTPException(
+                        status_code=status.HTTP_406_NOT_ACCEPTABLE,
+                        detail=f"Column '{column}' must be integer!",
+                        headers={"WWW-Authenticate": "Bearer"},
+                    )
+            elif column in ["name", "password", "description"]:
+                if not isinstance(new_values[column], str):
+                    raise HTTPException(
+                        status_code=status.HTTP_406_NOT_ACCEPTABLE,
+                        detail=f"Column '{column}' must be string!",
+                        headers={"WWW-Authenticate": "Bearer"},
+                    )
+                if column == 'password':
+                    new_values[column] = cls.process_password(value)
 
         return await UserController.update(user_id, new_values)
 

@@ -7,8 +7,20 @@ from src.middlewares.auth import get_current_user
 router = APIRouter(prefix='/profile', tags=['Profile'])
 
 
-@router.put("/")
-async def get_users(update_params: dict, curr_user: dict = Depends(get_current_user)):
+@router.post("/", description='''
+    Column names: 
+        "name", 
+        "password", 
+        "date_of_birth", 
+        "age", 
+        "description", 
+        "city", 
+        "zodiac_sign", 
+        "number", 
+        "socionic_type", 
+        "sixteen_pers_type"
+    ''')
+async def update_profile(update_params: dict, curr_user: dict = Depends(get_current_user)):
     return await ProfileController.update(curr_user['id'], update_params)
 
 

@@ -31,10 +31,14 @@ class AuthController(BaseController):
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
-        return cls.create_token({
+        token = cls.create_token({
             'id': user.get('id'),
             'phone': user.get('phone')
         })
+
+        fields = dict(**user)
+        fields.pop('password')
+        return {**token.dict(), **fields}
 
     @classmethod
     async def signup(cls, user):
